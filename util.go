@@ -35,7 +35,13 @@ func FindOpenPort(startingPort int, portsToTry int) (PortConnection, error) {
 	// Heres how it's done in windows: https://www.programmersought.com/article/8831210069/
 
 	connectionDetails := PortConnection{}
-	connectionDetails.OurIpAddress = GetOutboundIP()
+	ip, err := GetOutboundIP()
+
+	if err != nil {
+		connectionDetails.OurIpAddress = net.ParseIP("127.0.0.1")
+	}
+
+	connectionDetails.OurIpAddress = ip
 	//env.OurIpAddress = connectionDetails.OurIpAddress
 
 	//startingPort := env.Config.PortRangeBegin
@@ -70,16 +76,21 @@ func FindOpenPort(startingPort int, portsToTry int) (PortConnection, error) {
 }
 
 // GetOutboundIP - Gets preferred outbound ip of this machine obtained this from: https://stackoverflow.com/questions/23558425/how-do-i-get-the-local-ip-address-in-go
-func GetOutboundIP() net.IP {
+func GetOutboundIP() (net.IP, error) {
 	conn, err := net.Dial("udp", "8.8.8.8:80")
-	if err != nil {
-		log.Fatal(err)
+	defer exception.PanicOnErrorFunc(func() error {
+		if conn != nil {
+			return conn.Close()
+		}
+		return nil
+	})
+
+	if err != nil || conn == nil {
+		return nil, err
 	}
-	defer exception.PanicOnErrorFunc(conn.Close)
 
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
-
-	return localAddr.IP
+	return localAddr.IP, err
 }
 
 type PortConnection struct {
