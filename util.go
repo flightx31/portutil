@@ -2,6 +2,7 @@ package portutil
 
 import (
 	"errors"
+	"fmt"
 	"github.com/flightx31/exception"
 	"net"
 	"strconv"
@@ -16,6 +17,43 @@ type Logger interface {
 	Debug(args ...interface{})
 	Trace(args ...interface{})
 	Print(args ...interface{})
+}
+
+type L struct {
+}
+
+var l = L{}
+
+func (l L) Fatal(args ...interface{}) {
+	fmt.Println("FATAL: ", args)
+}
+
+func (l L) Panic(args ...interface{}) {
+	fmt.Println("PANIC: ", args)
+}
+
+func (l L) Error(args ...interface{}) {
+	fmt.Println("ERROR: ", args)
+}
+
+func (l L) Warn(args ...interface{}) {
+	fmt.Println("WARN: ", args)
+}
+
+func (l L) Info(args ...interface{}) {
+	fmt.Println("INFO: ", args)
+}
+
+func (l L) Debug(args ...interface{}) {
+	fmt.Println("DEBUG: ", args)
+}
+
+func (l L) Trace(args ...interface{}) {
+	fmt.Println("TRACE: ", args)
+}
+
+func (l L) Print(args ...interface{}) {
+	fmt.Println("PRINT: ", args)
 }
 
 var log Logger
@@ -38,7 +76,7 @@ func FindOpenPort(startingPort int, portsToTry int) (PortConnection, error) {
 	ip, err := GetOutboundIP()
 
 	if err != nil {
-		connectionDetails.OurIpAddress = net.ParseIP("127.0.0.1")
+		ip = net.ParseIP("127.0.0.1")
 	}
 
 	connectionDetails.OurIpAddress = ip
